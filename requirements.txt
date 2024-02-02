@@ -1,0 +1,5 @@
+openai==1.10.0
+transformers==4.37.2
+accelerate==0.26.1
+bitsandbytes==0.42.0
+jupyter==1.0.0
