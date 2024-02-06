@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import base64
-# import re
 from typing import List, Union
 
 import groundingdino.datasets.transforms as T
@@ -9,22 +8,18 @@ import numpy as np
 import openai
 import requests
 import torch
-# import cv2
 import torchvision
-from groundingdino.util.inference import load_image, load_model, predict
-# from dateutil import parser as dateparser
+from groundingdino.util.inference import load_model, predict
 from PIL import Image
 from scipy import spatial
 from torchvision import transforms
-from torchvision.ops import box_convert, box_iou
-# from torchvision.utils import draw_bounding_boxes
+from torchvision.ops import box_convert
 from transformers import (Blip2ForConditionalGeneration, Blip2Processor,
                           SamModel, SamProcessor)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 sam_model = SamModel.from_pretrained("facebook/sam-vit-base").to(device)
 sam_processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
-
 
 ## Grounding Dino settings
 BOX_TRESHOLD = 0.35
