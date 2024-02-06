@@ -75,8 +75,8 @@ Follow these steps to install the ViperGPT framework:
         ```
     - Download pre-trained model weights:
         ```bash
-        cd weights
         mkdir weights
+        cd weights
         curl -LO https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
         cd ../..
         ```
