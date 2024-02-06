@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import os
-from typing import List, Union
 
 import groundingdino.datasets.transforms as T
 import numpy as np
@@ -56,7 +55,7 @@ midas_transforms = torch.hub.load("intel-isl/MiDaS", "transforms")
 
 depth_transform = midas_transforms.dpt_transform
 
-def convert_bbox(image_source: torch.tensor, boxes: torch.Tensor) -> np.ndarray:
+def convert_bbox(image_source: torch.Tensor, boxes: torch.Tensor) -> np.ndarray:
     _,h, w = image_source.shape
     boxes = boxes * torch.Tensor([w, h, w, h])
     xyxy = box_convert(boxes=boxes, in_fmt="cxcywh", out_fmt="xyxy").numpy()
@@ -118,8 +117,8 @@ class ImagePatch:
         Returns a new ImagePatch object containing a crop of the image at the given coordinates.
     """
 
-    def __init__(self, image: Union[Image.Image, torch.Tensor, np.ndarray], left: int = None, lower: int = None,
-                 right: int = None, upper: int = None, parent_left=0, parent_lower=0, queues=None,
+    def __init__(self, image: Image.Image | torch.Tensor | np.ndarray, left: int | None = None, lower: int | None = None,
+                 right: int | None = None, upper: int | None = None, parent_left=0, parent_lower=0, queues=None,
                  parent_img_patch=None, mask = None):
         """Initializes an ImagePatch object by cropping the image at the given coordinates and stores the coordinates as
         attributes. If no coordinates are provided, the image is left unmodified, and the coordinates are set to the
@@ -172,7 +171,7 @@ class ImagePatch:
         self.height = self.cropped_image.shape[1]
         self.width = self.cropped_image.shape[2]
 
-        self.cache = {}
+        # self.cache = {}
         self.queues = (None, None) if queues is None else queues
 
         self.parent_img_patch = parent_img_patch
@@ -236,7 +235,7 @@ class ImagePatch:
             obj_list.append(obj)
         return obj_list
 
-    def exists(self, object_name) -> bool:
+    def exists(self, object_name: str) -> bool:
         """Returns True if the object specified by object_name is found in the image, and False otherwise.
         Parameters
         -------
@@ -367,8 +366,8 @@ class ImagePatch:
         response_message = response.json()["choices"][0]["message"]["content"]
         return response_message
 
-    def best_image_match(self,list_patches: list[ImagePatch], content: List[str], return_index: bool = False) -> \
-            Union[ImagePatch, None]:
+    def best_image_match(self, list_patches: list[ImagePatch], content: list[str], return_index: bool = False) -> \
+            ImagePatch | int | None:
         """Returns the patch most likely to contain the content.
         Parameters
         ----------
@@ -401,7 +400,7 @@ class ImagePatch:
             query_embedding = openai.Embedding.create(model=EMBEDDING_MODEL, input=cont)
             relatedness = [relatedness_fn(query_embedding["data"][0]["embedding"], embed["data"][0]["embedding"]) for embed in patch_embeddings]
             scores += torch.tensor(relatedness)
-        scores = scores / len (content)
+        scores = scores / len(content)
 
         scores = scores.argmax().item()  # Argmax over all image patches
 
@@ -409,7 +408,7 @@ class ImagePatch:
             return scores
         return list_patches[scores]
 
-    def crop(self, left: int, lower: int, right: int, upper: int,mask) -> ImagePatch:
+    def crop(self, left: int, lower: int, right: int, upper: int, mask) -> ImagePatch:
         """Returns a new ImagePatch containing a crop of the original image at the given coordinates.
         Parameters
         ----------
