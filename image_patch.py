@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import os
 from typing import List, Union
 
 import groundingdino.datasets.transforms as T
@@ -17,6 +18,8 @@ from torchvision.ops import box_convert
 from transformers import (Blip2ForConditionalGeneration, Blip2Processor,
                           SamModel, SamProcessor)
 
+BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 sam_model = SamModel.from_pretrained("facebook/sam-vit-base").to(device)
 sam_processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
@@ -24,7 +27,9 @@ sam_processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
 ## Grounding Dino settings
 BOX_TRESHOLD = 0.35
 TEXT_TRESHOLD = 0.25
-model = load_model("./GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py", "./GroundingDINO/weights/groundingdino_swint_ogc.pth")
+gd_model = load_model(
+    os.path.join(BASE_PATH, "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"),
+    os.path.join(BASE_PATH, "GroundingDINO/weights/groundingdino_swint_ogc.pth"))
 
 processor = Blip2Processor.from_pretrained("Salesforce/blip2-flan-t5-xl")
 model_blip = Blip2ForConditionalGeneration.from_pretrained(
@@ -34,7 +39,8 @@ model_blip = Blip2ForConditionalGeneration.from_pretrained(
 sam_model = SamModel.from_pretrained("facebook/sam-vit-base").to(device)
 sam_processor = SamProcessor.from_pretrained("facebook/sam-vit-base")
 
-api_file = './api.key'
+api_file = os.path.join(BASE_PATH, 'api.key')
+
 with open(api_file) as f:
     api_key = f.readline().splitlines()
 openai.api_key = api_key[0]
@@ -207,7 +213,7 @@ class ImagePatch:
         """
         input_image = image_transform(self.PIL_img)
         boxes, _logits, _phrases = predict(
-            model=model,
+            model=gd_model,
             image=input_image,
             caption=object_name,
             box_threshold=BOX_TRESHOLD,
@@ -239,11 +245,6 @@ class ImagePatch:
         """
         prompt = f"Question: Do you see a {object_name} in the image? Answer (Y/N):"
 
-        # OpenAI API Key
-        api_file = 'gpt'
-        with open(api_file) as f:
-            api_key = f.readline().splitlines()
-        api_key = api_key[0]
         img_path = "query_image.png"
         # self.PIL_img.save(img_path,"PNG")
         self.PIL_img.save(img_path,"PNG")
@@ -252,7 +253,7 @@ class ImagePatch:
 
         headers = {
           "Content-Type": "application/json",
-          "Authorization": f"Bearer {api_key}"
+          "Authorization": f"Bearer {openai.api_key}"
         }
 
         payload = {
@@ -328,11 +329,6 @@ class ImagePatch:
 
 #         return generated_text
 
-          # OpenAI API Key
-        api_file = 'gpt'
-        with open(api_file) as f:
-            api_key = f.readline().splitlines()
-        api_key = api_key[0]
         img_path = "query_image.png"
         self.PIL_img.save(img_path,"PNG")
         # self.original_img.save(img_path,"PNG")
@@ -341,7 +337,7 @@ class ImagePatch:
 
         headers = {
           "Content-Type": "application/json",
-          "Authorization": f"Bearer {api_key}"
+          "Authorization": f"Bearer {openai.api_key}"
         }
 
         payload = {
@@ -451,11 +447,6 @@ class ImagePatch:
         query = question.format(object_name)
 
         prompt = query
-          # OpenAI API Key
-        api_file = 'gpt'
-        with open(api_file) as f:
-            api_key = f.readline().splitlines()
-        api_key = api_key[0]
         img_path = "query_image.png"
         # self.PIL_img.save(img_path,"PNG")
         self.original_img.save(img_path,"PNG")
@@ -464,7 +455,7 @@ class ImagePatch:
 
         headers = {
           "Content-Type": "application/json",
-          "Authorization": f"Bearer {api_key}"
+          "Authorization": f"Bearer {openai.api_key}"
         }
 
         payload = {
