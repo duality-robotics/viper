@@ -43,7 +43,7 @@ api_file = os.path.join(BASE_PATH, 'api.key')
 
 with open(api_file) as f:
     api_key = f.readline().splitlines()
-client = OpenAI(api_key=api_key[0])
+OPENAI_CLIENT = OpenAI(api_key=api_key[0])
 
 EMBEDDING_MODEL = "text-embedding-ada-002"
 
@@ -254,7 +254,7 @@ class ImagePatch:
 
         headers = {
           "Content-Type": "application/json",
-          "Authorization": f"Bearer {client.api_key}"
+          "Authorization": f"Bearer {OPENAI_CLIENT.api_key}"
         }
 
         payload = {
@@ -338,7 +338,7 @@ class ImagePatch:
 
         headers = {
           "Content-Type": "application/json",
-          "Authorization": f"Bearer {client.api_key}"
+          "Authorization": f"Bearer {OPENAI_CLIENT.api_key}"
         }
 
         payload = {
@@ -394,12 +394,12 @@ class ImagePatch:
             generated_ids = model_blip.generate(**inputs)
             generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
             ## convert generated_text to embedding
-            response = client.embeddings.create(model=EMBEDDING_MODEL, input=generated_text)
+            response = OPENAI_CLIENT.embeddings.create(model=EMBEDDING_MODEL, input=generated_text)
             patch_embeddings.append(response)
 
         scores = torch.zeros(len(patch_embeddings))
         for cont in content:
-            query_embedding = client.embeddings.create(model=EMBEDDING_MODEL, input=cont)
+            query_embedding = OPENAI_CLIENT.embeddings.create(model=EMBEDDING_MODEL, input=cont)
             relatedness = [relatedness_fn(query_embedding.data[0].embedding, embed.data[0].embedding) for embed in patch_embeddings]
             scores += torch.tensor(relatedness)
         scores = scores / len(content)
@@ -456,7 +456,7 @@ class ImagePatch:
 
         headers = {
           "Content-Type": "application/json",
-          "Authorization": f"Bearer {client.api_key}"
+          "Authorization": f"Bearer {OPENAI_CLIENT.api_key}"
         }
 
         payload = {
